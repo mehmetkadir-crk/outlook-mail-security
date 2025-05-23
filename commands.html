@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mail Security Commands</title>
+    
+    <!-- Office.js with fallback -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" 
+            onerror="handleOfficeError()"></script>
+            
+    <script>
+        function handleOfficeError() {
+            console.log('Office.js failed to load in commands.html');
+            // Try fallback
+            const fallback = document.createElement('script');
+            fallback.src = 'https://res.cdn.office.net/scripts/office-1.1.js';
+            fallback.onerror = () => console.log('All Office.js CDNs failed in commands.html');
+            document.head.appendChild(fallback);
+        }
+    </script>
+</head>
+
+<body>
+    <script>
+        let officeInitialized = false;
+        
+        // Office.js hazır olduğunda initialize et - güvenli versiyon
+        function initializeCommands() {
+            if (officeInitialized) return;
+            
+            if (typeof Office !== 'undefined' && Office.onReady) {
+                Office.onReady().then(() => {
+                    console.log('Commands loaded successfully');
+                    officeInitialized = true;
+                    setupCommands();
+                }).catch((error) => {
+                    console.error('Commands initialization error:', error);
+                    setupCommandsFallback();
+                });
+            } else {
+                console.log('Office not available in commands, using fallback');
+                setupCommandsFallback();
+            }
+        }
+        
+        function setupCommands() {
+            // Office.js mevcut - normal setup
+            if (typeof Office !== 'undefined' && Office.actions) {
+                Office.actions.openTaskPane = openTaskPane;
+            }
+        }
+        
+        function setupCommandsFallback() {
+            // Office.js yok - fallback setup
+            window.openTaskPane = openTaskPane;
+            
+            if (typeof window.Office === 'undefined') {
+                window.Office = { actions: {} };
+            }
+            if (!window.Office.actions) {
+                window.Office.actions = {};
+            }
+            window.Office.actions.openTaskPane = openTaskPane;
+        }
+
+        function openTaskPane(event) {
+            console.log('Opening task pane...');
+            
+            try {
+                // Task pane açma işlemi
+                if (event && typeof event.completed === 'function') {
+                    event.completed();
+                } else {
+                    console.log('Event completed function not available');
+                }
+            } catch (error) {
+                console.error('Error in openTaskPane:', error);
+            }
+        }
+
+        // Initialize when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeCommands);
+        } else {
+            initializeCommands();
+        }
+        
+        console.log('Mail Security Commands script loaded');
+    </script>
+</body>
+</html>
